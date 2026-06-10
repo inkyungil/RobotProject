@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Robot Control Dashboard</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --dim: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+/* ── Header ─────────────────────────────────────── */
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.logo { font-size: 15px; font-weight: bold; letter-spacing: 2px; }
+.conn-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  transition: background 0.3s;
+}
+.dot.ok { background: var(--green); }
+
+/* ── Layout ─────────────────────────────────────── */
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr 200px;
+  gap: 1px;
+  background: var(--border);
+  min-height: 0;
+}
+.panel {
+  background: var(--panel);
+  padding: 14px;
+  overflow-y: auto;
+}
+
+/* ── Section titles ──────────────────────────────── */
+.sec-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--dim);
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.section { margin-bottom: 18px; }
+
+/* ── D-pad ──────────────────────────────────────── */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(3, 52px);
+  gap: 4px;
+  margin: 8px auto 14px;
+  width: fit-content;
+}
+.dbtn {
+  background: #21262d;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: background 0.08s, border-color 0.08s;
+  touch-action: none;
+}
+.dbtn:hover { border-color: var(--accent); }
+.dbtn.active { background: var(--accent); border-color: var(--accent); color: #0d1117; }
+.dbtn.stop { border-color: #3a1c1c; color: var(--red); }
+.dbtn.stop:hover { background: #3a1c1c; }
+.dbtn.stop.active { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* ── Sliders ─────────────────────────────────────── */
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 5px;
+}
+.slider-row span:last-child { color: var(--accent); font-weight: bold; }
+input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* ── Action buttons ──────────────────────────────── */
+.act-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  margin-top: 6px;
+  background: #21262d;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: center;
+  transition: border-color 0.1s, color 0.1s;
+}
+.act-btn:hover { border-color: var(--accent); color: var(--accent); }
+.act-btn.danger { border-color: #3a1c1c; color: var(--red); }
+.act-btn.danger:hover { background: #3a1c1c; }
+
+.hint-box {
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.7;
+  margin-top: 4px;
+}
+
+/* ── Map ─────────────────────────────────────────── */
+.map-wrap {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+}
+.map-bar {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 0 2px;
+}
+canvas {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: crosshair;
+  max-width: 100%;
+  max-height: 100%;
+}
+.map-actions { display: flex; gap: 6px; }
+.map-actions button {
+  padding: 5px 14px;
+  background: #21262d;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+}
+.map-actions button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Telemetry ───────────────────────────────────── */
+.tel-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid #1c2128;
+}
+.tel-val { color: var(--green); font-weight: bold; }
+.tel-val.warn { color: var(--yellow); }
+.tel-val.info { color: var(--accent); }
+
+/* velocity bar */
+.vel-bar-wrap {
+  margin-top: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  height: 6px;
+  width: 100%;
+}
+.vel-bar { height: 100%; background: var(--green); transition: width 0.1s; width: 0%; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">◈ ROBOT CONTROL DASHBOARD</div>
+  <div class="conn-badge">
+    <span class="dot" id="dot"></span>
+    <span id="conn-text">DISCONNECTED</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Left: Controls ─────────────────────────── -->
+  <div class="panel">
+    <div class="section">
+      <div class="sec-title">Direction Control</div>
+      <div class="dpad">
+        <div></div>
+        <button class="dbtn" id="btn-fwd" title="Forward (W / ↑)">▲</button>
+        <div></div>
+        <button class="dbtn" id="btn-left" title="Turn Left (A / ←)">◄</button>
+        <button class="dbtn stop" id="btn-stop" title="Stop (Space)">■</button>
+        <button class="dbtn" id="btn-right" title="Turn Right (D / →)">►</button>
+        <div></div>
+        <button class="dbtn" id="btn-back" title="Backward (S / ↓)">▼</button>
+        <div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Speed Settings</div>
+      <div class="slider-row"><span>Linear</span><span id="lv-label">0.50 m/s</span></div>
+      <input type="range" id="lv-slider" min="0.1" max="1.5" step="0.05" value="0.5">
+      <div class="slider-row"><span>Angular</span><span id="av-label">1.00 rad/s</span></div>
+      <input type="range" id="av-slider" min="0.1" max="2.5" step="0.1" value="1.0">
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Keyboard Shortcuts</div>
+      <div class="hint-box">
+        W / ↑ &nbsp; Forward<br>
+        S / ↓ &nbsp; Backward<br>
+        A / ← &nbsp; Rotate Left<br>
+        D / → &nbsp; Rotate Right<br>
+        Space &nbsp;&nbsp; Stop
+      </div>
+    </div>
+
+    <button class="act-btn danger" id="btn-estop">⬛ EMERGENCY STOP</button>
+  </div>
+
+  <!-- ── Center: Map canvas ─────────────────────── -->
+  <div class="map-wrap">
+    <div class="map-bar">
+      <span>PATH MAP &nbsp;·&nbsp; <span id="pt-count">0</span> pts</span>
+      <span>Scroll: zoom &nbsp;·&nbsp; Follow: <span id="follow-label" style="color:var(--accent)">ON</span></span>
+    </div>
+    <canvas id="map"></canvas>
+    <div class="map-actions">
+      <button id="btn-clear">Clear Path</button>
+      <button id="btn-reset">Reset Position</button>
+      <button id="btn-follow">Follow: ON</button>
+    </div>
+  </div>
+
+  <!-- ── Right: Telemetry ───────────────────────── -->
+  <div class="panel">
+    <div class="section">
+      <div class="sec-title">Position</div>
+      <div class="tel-row"><span>X</span><span class="tel-val" id="t-x">0.000 m</span></div>
+      <div class="tel-row"><span>Y</span><span class="tel-val" id="t-y">0.000 m</span></div>
+      <div class="tel-row"><span>θ</span><span class="tel-val" id="t-th">0.0 °</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Velocity</div>
+      <div class="tel-row"><span>Linear</span><span class="tel-val" id="t-lin">0.00 m/s</span></div>
+      <div class="vel-bar-wrap"><div class="vel-bar" id="lin-bar"></div></div>
+      <div class="tel-row" style="margin-top:6px"><span>Angular</span><span class="tel-val" id="t-ang">0.00 rad/s</span></div>
+      <div class="vel-bar-wrap"><div class="vel-bar" id="ang-bar"></div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">System</div>
+      <div class="tel-row"><span>Mode</span><span class="tel-val warn" id="t-mode">SIM</span></div>
+      <div class="tel-row"><span>Path pts</span><span class="tel-val info" id="t-pts">0</span></div>
+      <div class="tel-row"><span>WebSocket</span><span class="tel-val" id="t-ws" style="color:var(--red)">DISC</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Distance</div>
+      <div class="tel-row"><span>Total</span><span class="tel-val info" id="t-dist">0.00 m</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// Canvas
+// ─────────────────────────────────────────────────────────
+const canvas = document.getElementById("map");
+const ctx = canvas.getContext("2d");
+let scale = 80;        // px / metre
+let followRobot = true;
+let viewX = 0, viewY = 0;
+let path = [{ x: 0, y: 0 }];
+let totalDist = 0;
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const size = Math.min(wrap.clientWidth - 24, wrap.clientHeight - 80);
+  canvas.width = size;
+  canvas.height = size;
+}
+resizeCanvas();
+window.addEventListener("resize", () => { resizeCanvas(); draw(); });
+
+// ── Coordinate helpers ─────────────────────────────────
+function w2c(wx, wy) {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  return { x: cx + (wx - viewX) * scale, y: cy - (wy - viewY) * scale };
+}
+
+// ── Draw functions ─────────────────────────────────────
+function drawGrid() {
+  const g = scale;
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const ox = ((cx - viewX * scale) % g + g) % g;
+  const oy = ((cy + viewY * scale) % g + g) % g;
+
+  ctx.strokeStyle = "rgba(48,54,61,0.9)";
+  ctx.lineWidth = 1;
+  for (let x = ox - g; x < canvas.width + g; x += g) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = oy - g; y < canvas.height + g; y += g) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+
+  // origin axes
+  const o = w2c(0, 0);
+  ctx.strokeStyle = "rgba(88,166,255,0.25)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(0, o.y); ctx.lineTo(canvas.width, o.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(o.x, 0); ctx.lineTo(o.x, canvas.height); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // origin dot
+  ctx.fillStyle = "rgba(88,166,255,0.5)";
+  ctx.beginPath(); ctx.arc(o.x, o.y, 3, 0, Math.PI * 2); ctx.fill();
+
+  // grid labels (m)
+  ctx.fillStyle = "rgba(139,148,158,0.5)";
+  ctx.font = "9px Courier New";
+  const startXm = Math.ceil(viewX - canvas.width / (2 * scale));
+  for (let m = startXm; m <= startXm + canvas.width / scale + 1; m++) {
+    if (m === 0) continue;
+    const p = w2c(m, 0);
+    if (p.x > 4 && p.x < canvas.width - 4) ctx.fillText(m + "m", p.x + 2, cy + 11);
+  }
+}
+
+function drawPath() {
+  if (path.length < 2) return;
+  ctx.strokeStyle = "#3fb950";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  const s = w2c(path[0].x, path[0].y);
+  ctx.moveTo(s.x, s.y);
+  for (let i = 1; i < path.length; i++) {
+    const p = w2c(path[i].x, path[i].y);
+    ctx.lineTo(p.x, p.y);
+  }
+  ctx.stroke();
+
+  // start marker
+  ctx.fillStyle = "#58a6ff";
+  ctx.beginPath();
+  const sp = w2c(path[0].x, path[0].y);
+  ctx.arc(sp.x, sp.y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0d1117";
+  ctx.font = "bold 9px Courier New";
+  ctx.fillText("S", sp.x - 3, sp.y + 3);
+}
+
+function drawRobot(rx, ry, theta) {
+  const p = w2c(rx, ry);
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(-theta);
+
+  // shadow
+  ctx.shadowColor = "#58a6ff";
+  ctx.shadowBlur = 8;
+
+  // body triangle
+  ctx.fillStyle = "#e6edf3";
+  ctx.strokeStyle = "#58a6ff";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(16, 0);
+  ctx.lineTo(-8, -9);
+  ctx.lineTo(-5, 0);
+  ctx.lineTo(-8, 9);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  // heading line
+  ctx.strokeStyle = "#f85149";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(20, 0);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawCompass(rx, ry, theta) {
+  const cx = canvas.width - 36, cy = 36, r = 24;
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  ctx.fillStyle = "rgba(22,27,34,0.85)";
+  ctx.strokeStyle = var_border();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+  // N marker
+  ctx.fillStyle = "#f85149";
+  ctx.font = "bold 9px Courier New";
+  ctx.textAlign = "center";
+  ctx.fillText("N", 0, -r + 12);
+
+  // needle (robot heading)
+  ctx.rotate(-theta);
+  ctx.strokeStyle = "#58a6ff";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -r + 6); ctx.stroke();
+  ctx.fillStyle = "#58a6ff";
+  ctx.beginPath(); ctx.moveTo(0, -r + 6); ctx.lineTo(-3, -r + 14); ctx.lineTo(3, -r + 14); ctx.fill();
+
+  ctx.restore();
+}
+
+function var_border() { return "#30363d"; }
+
+function drawScale() {
+  const bpx = scale;
+  const x = 14, y = canvas.height - 12;
+  ctx.strokeStyle = "#8b949e";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x, y); ctx.lineTo(x + bpx, y);
+  ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
+  ctx.moveTo(x + bpx, y - 4); ctx.lineTo(x + bpx, y + 4);
+  ctx.stroke();
+  ctx.fillStyle = "#8b949e";
+  ctx.font = "10px Courier New";
+  ctx.textAlign = "center";
+  ctx.fillText("1 m", x + bpx / 2, y - 7);
+}
+
+let robot = { x: 0, y: 0, theta: 0, linear: 0, angular: 0, ros2: false };
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#0d1117";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (followRobot) { viewX = robot.x; viewY = robot.y; }
+
+  drawGrid();
+  drawPath();
+  drawRobot(robot.x, robot.y, robot.theta);
+  drawCompass(robot.x, robot.y, robot.theta);
+  drawScale();
+}
+
+// ─────────────────────────────────────────────────────────
+// WebSocket
+// ─────────────────────────────────────────────────────────
+let ws = null;
+
+function connect() {
+  ws = new WebSocket(`ws://${location.host}/ws`);
+
+  ws.onopen = () => {
+    document.getElementById("dot").classList.add("ok");
+    document.getElementById("conn-text").textContent = "CONNECTED";
+    document.getElementById("t-ws").textContent = "OK";
+    document.getElementById("t-ws").style.color = "var(--green)";
+  };
+
+  ws.onclose = () => {
+    document.getElementById("dot").classList.remove("ok");
+    document.getElementById("conn-text").textContent = "DISCONNECTED";
+    document.getElementById("t-ws").textContent = "DISC";
+    document.getElementById("t-ws").style.color = "var(--red)";
+    setTimeout(connect, 3000);
+  };
+
+  ws.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+
+    // accumulate path on frontend
+    const last = path[path.length - 1];
+    const dx = d.x - last.x, dy = d.y - last.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist >= 0.02) {
+      path.push({ x: d.x, y: d.y });
+      totalDist += dist;
+      if (path.length > 5000) path.shift();
+    }
+
+    robot = d;
+    updateTelemetry(d);
+    draw();
+  };
+}
+
+function updateTelemetry(d) {
+  document.getElementById("t-x").textContent    = d.x.toFixed(3) + " m";
+  document.getElementById("t-y").textContent    = d.y.toFixed(3) + " m";
+  document.getElementById("t-th").textContent   = (d.theta * 180 / Math.PI).toFixed(1) + " °";
+  document.getElementById("t-lin").textContent  = d.linear.toFixed(2) + " m/s";
+  document.getElementById("t-ang").textContent  = d.angular.toFixed(2) + " rad/s";
+  document.getElementById("t-pts").textContent  = path.length;
+  document.getElementById("pt-count").textContent = path.length;
+  document.getElementById("t-dist").textContent = totalDist.toFixed(2) + " m";
+
+  const maxL = parseFloat(document.getElementById("lv-slider").value);
+  const maxA = parseFloat(document.getElementById("av-slider").value);
+  document.getElementById("lin-bar").style.width = Math.min(100, Math.abs(d.linear) / maxL * 100) + "%";
+  document.getElementById("ang-bar").style.width = Math.min(100, Math.abs(d.angular) / maxA * 100) + "%";
+  document.getElementById("lin-bar").style.background = d.linear < 0 ? "var(--yellow)" : "var(--green)";
+  document.getElementById("ang-bar").style.background = "var(--accent)";
+
+  const modeEl = document.getElementById("t-mode");
+  if (d.ros2) {
+    modeEl.textContent = "ROS2"; modeEl.style.color = "var(--green)";
+  } else {
+    modeEl.textContent = "SIM";  modeEl.style.color = "var(--yellow)";
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// Velocity commands
+// ─────────────────────────────────────────────────────────
+let maxLin = 0.5, maxAng = 1.0;
+
+function sendVel(lin, ang) {
+  fetch("/cmd_vel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ linear: lin, angular: ang })
+  });
+}
+
+// D-pad hold logic
+const BTN_CFG = {
+  "btn-fwd":   () => [maxLin, 0],
+  "btn-back":  () => [-maxLin, 0],
+  "btn-left":  () => [0, maxAng],
+  "btn-right": () => [0, -maxAng],
+};
+
+const holding = {};
+
+function startHold(id) {
+  if (holding[id]) return;
+  const [l, a] = BTN_CFG[id]();
+  sendVel(l, a);
+  document.getElementById(id).classList.add("active");
+  holding[id] = setInterval(() => {
+    const [ll, aa] = BTN_CFG[id]();
+    sendVel(ll, aa);
+  }, 80);
+}
+
+function endHold(id) {
+  if (holding[id]) { clearInterval(holding[id]); delete holding[id]; }
+  document.getElementById(id).classList.remove("active");
+  if (Object.keys(holding).length === 0) sendVel(0, 0);
+}
+
+function fullStop() {
+  Object.keys(holding).forEach(id => {
+    clearInterval(holding[id]); delete holding[id];
+    document.getElementById(id).classList.remove("active");
+  });
+  keysDown.clear();
+  sendVel(0, 0);
+}
+
+Object.keys(BTN_CFG).forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener("mousedown",  () => startHold(id));
+  el.addEventListener("mouseup",    () => endHold(id));
+  el.addEventListener("mouseleave", () => endHold(id));
+  el.addEventListener("touchstart", e => { e.preventDefault(); startHold(id); }, { passive: false });
+  el.addEventListener("touchend",   () => endHold(id));
+  el.addEventListener("touchcancel",() => endHold(id));
+});
+
+document.getElementById("btn-stop").addEventListener("click", fullStop);
+document.getElementById("btn-estop").addEventListener("click", fullStop);
+
+// ─────────────────────────────────────────────────────────
+// Keyboard
+// ─────────────────────────────────────────────────────────
+const KEY_MAP = {
+  KeyW: "btn-fwd",   ArrowUp:    "btn-fwd",
+  KeyS: "btn-back",  ArrowDown:  "btn-back",
+  KeyA: "btn-left",  ArrowLeft:  "btn-left",
+  KeyD: "btn-right", ArrowRight: "btn-right",
+};
+const keysDown = new Set();
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") { e.preventDefault(); fullStop(); return; }
+  if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)) e.preventDefault();
+  const id = KEY_MAP[e.code];
+  if (id && !keysDown.has(e.code)) { keysDown.add(e.code); startHold(id); }
+});
+document.addEventListener("keyup", e => {
+  const id = KEY_MAP[e.code];
+  if (id) { keysDown.delete(e.code); endHold(id); }
+});
+
+// ─────────────────────────────────────────────────────────
+// Sliders
+// ─────────────────────────────────────────────────────────
+document.getElementById("lv-slider").addEventListener("input", e => {
+  maxLin = parseFloat(e.target.value);
+  document.getElementById("lv-label").textContent = maxLin.toFixed(2) + " m/s";
+});
+document.getElementById("av-slider").addEventListener("input", e => {
+  maxAng = parseFloat(e.target.value);
+  document.getElementById("av-label").textContent = maxAng.toFixed(2) + " rad/s";
+});
+
+// ─────────────────────────────────────────────────────────
+// Map controls
+// ─────────────────────────────────────────────────────────
+document.getElementById("btn-clear").addEventListener("click", () => {
+  path = [{ x: robot.x, y: robot.y }];
+  totalDist = 0;
+  draw();
+});
+document.getElementById("btn-reset").addEventListener("click", () => {
+  fetch("/reset", { method: "POST" });
+  path = [{ x: 0, y: 0 }];
+  totalDist = 0;
+  robot = { x: 0, y: 0, theta: 0, linear: 0, angular: 0, ros2: robot.ros2 };
+  draw();
+});
+
+let followLocked = true;
+document.getElementById("btn-follow").addEventListener("click", () => {
+  followLocked = !followLocked;
+  followRobot = followLocked;
+  const lbl = followLocked ? "ON" : "OFF";
+  document.getElementById("btn-follow").textContent = "Follow: " + lbl;
+  document.getElementById("follow-label").textContent = lbl;
+  document.getElementById("follow-label").style.color = followLocked ? "var(--accent)" : "var(--dim)";
+});
+
+// Mouse wheel zoom
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  scale = Math.min(400, Math.max(20, scale * factor));
+  draw();
+}, { passive: false });
+
+// ─────────────────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────────────────
+connect();
+draw();
+</script>
+</body>
+</html>
