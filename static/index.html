@@ -675,7 +675,7 @@ function connect() {
     setTimeout(connect, 3000);
   };
 
-  ws.onmessage = (e) => {
+  ws.onmessage = async (e) => {
     const d = JSON.parse(e.data);
 
     if (d.type === "state") {
@@ -693,6 +693,15 @@ function connect() {
       drawSlam();   // redraw robot on slam map too
 
     } else if (d.type === "map") {
+      if (d.compressed) {
+        const bytes  = Uint8Array.from(atob(d.data), c => c.charCodeAt(0));
+        const ds     = new DecompressionStream("gzip");
+        const writer = ds.writable.getWriter();
+        writer.write(bytes); writer.close();
+        const raw    = new Uint8Array(await new Response(ds.readable).arrayBuffer());
+        d.data = btoa(String.fromCharCode(...raw));
+        d.compressed = false;
+      }
       const isFirst = !slamMap;
       slamMap = d;
       document.getElementById("slam-size").textContent =

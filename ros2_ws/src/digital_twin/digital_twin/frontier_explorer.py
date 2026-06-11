@@ -41,17 +41,20 @@ class FrontierExplorer(Node):
     def __init__(self):
         super().__init__('frontier_explorer')
 
-        self._map:        OccupancyGrid | None = None
-        self._exploring:  bool                 = False
-        self._nav_active: bool                 = False
-        self._goal_sent_at: float              = 0.0
+        self._map:         OccupancyGrid | None = None
+        self._exploring:   bool                 = False
+        self._nav_active:  bool                 = False
+        self._goal_sent_at: float               = 0.0
+        self._goal_handle                       = None
 
         self.create_subscription(OccupancyGrid, '/map',         self._on_map,     MAP_QOS)
         self.create_subscription(String,        '/explore/cmd', self._on_cmd,     10)
         self._status_pub = self.create_publisher(String, '/explore/status', 10)
         self._nav        = ActionClient(self, NavigateToPose, 'navigate_to_pose')
 
+        self._current_status = 'idle'
         self.create_timer(EXPLORE_TICK_SEC, self._tick)
+        self.create_timer(2.0, self._pub_status_periodic)
         self.get_logger().info('FrontierExplorer ready — send "start" to /explore/cmd')
 
     # ── callbacks ──────────────────────────────────────────────────────────────
@@ -71,6 +74,9 @@ class FrontierExplorer(Node):
             self._nav_active = False
             self._pub_status('idle')
             self.get_logger().info('Exploration stopped')
+            if self._goal_handle is not None:
+                self._goal_handle.cancel_goal_async()
+                self._goal_handle = None
 
     # ── main loop ──────────────────────────────────────────────────────────────
 
@@ -183,16 +189,22 @@ class FrontierExplorer(Node):
             self.get_logger().warn('Goal rejected by Nav2')
             self._nav_active = False
             return
+        self._goal_handle = handle
         handle.get_result_async().add_done_callback(self._on_nav_done)
 
     def _on_nav_done(self, future):
-        self._nav_active = False
+        self._nav_active  = False
+        self._goal_handle = None
         status = future.result().status
         self.get_logger().info(f'Navigation finished (status={status})')
 
     # ── helpers ────────────────────────────────────────────────────────────────
 
+    def _pub_status_periodic(self):
+        self._pub_status(self._current_status)
+
     def _pub_status(self, status: str):
+        self._current_status = status
         msg      = String()
         msg.data = status
         self._status_pub.publish(msg)

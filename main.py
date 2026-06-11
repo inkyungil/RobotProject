@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import gzip
 import json
 import math
 import threading
@@ -89,7 +90,8 @@ if ROS2_AVAILABLE:
         def _map_cb(self, msg: "OccupancyGrid"):
             global _map_data, _map_updated
             # int8 → uint8: -1 (unknown) becomes 205, 0 (free) stays 0, 100 (occupied) stays 100
-            raw    = bytes([v & 0xFF for v in msg.data])
+            raw = bytes([v & 0xFF for v in msg.data])
+            compressed = gzip.compress(raw, compresslevel=1)
             _map_data = {
                 "type":       "map",
                 "width":      msg.info.width,
@@ -97,7 +99,8 @@ if ROS2_AVAILABLE:
                 "resolution": round(msg.info.resolution, 4),
                 "origin_x":   round(msg.info.origin.position.x, 4),
                 "origin_y":   round(msg.info.origin.position.y, 4),
-                "data":       base64.b64encode(raw).decode("ascii"),
+                "data":       base64.b64encode(compressed).decode("ascii"),
+                "compressed": True,
             }
             _map_updated = True
 
@@ -228,13 +231,13 @@ async def explore_stop():
 @app.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket):
     await websocket.accept()
-    _clients.add(websocket)
-    # Send latest map immediately on connect
+    # Send initial map before joining _clients to avoid concurrent send with simulation loop
     if _map_data:
         try:
             await websocket.send_text(json.dumps(_map_data))
         except Exception:
             pass
+    _clients.add(websocket)
     try:
         while True:
             try:
