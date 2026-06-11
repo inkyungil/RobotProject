@@ -37,18 +37,8 @@ header {
   flex-shrink: 0;
 }
 .logo { font-size: 15px; font-weight: bold; letter-spacing: 2px; }
-.conn-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--red);
-  transition: background 0.3s;
-}
+.conn-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); transition: background 0.3s; }
 .dot.ok { background: var(--green); }
 
 /* ── Layout ─────────────────────────────────────── */
@@ -60,13 +50,8 @@ header {
   background: var(--border);
   min-height: 0;
 }
-.panel {
-  background: var(--panel);
-  padding: 14px;
-  overflow-y: auto;
-}
+.panel { background: var(--panel); padding: 14px; overflow-y: auto; }
 
-/* ── Section titles ──────────────────────────────── */
 .sec-title {
   font-size: 10px;
   text-transform: uppercase;
@@ -116,11 +101,7 @@ header {
   margin-bottom: 5px;
 }
 .slider-row span:last-child { color: var(--accent); font-weight: bold; }
-input[type=range] {
-  width: 100%;
-  accent-color: var(--accent);
-  margin-bottom: 12px;
-}
+input[type=range] { width: 100%; accent-color: var(--accent); margin-bottom: 12px; }
 
 /* ── Action buttons ──────────────────────────────── */
 .act-btn {
@@ -141,6 +122,9 @@ input[type=range] {
 .act-btn:hover { border-color: var(--accent); color: var(--accent); }
 .act-btn.danger { border-color: #3a1c1c; color: var(--red); }
 .act-btn.danger:hover { background: #3a1c1c; }
+.act-btn.success { border-color: #1a3a1c; color: var(--green); }
+.act-btn.success:hover { background: #1a3a1c; }
+.act-btn.active-explore { background: #1a3a1c; border-color: var(--green); color: var(--green); }
 
 .hint-box {
   background: var(--bg);
@@ -152,9 +136,65 @@ input[type=range] {
   margin-top: 4px;
 }
 
-/* ── Map ─────────────────────────────────────────── */
-.map-wrap {
+/* ── Exploration status badge ────────────────────── */
+.explore-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
   background: var(--bg);
+  border-radius: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.explore-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+  flex-shrink: 0;
+}
+.explore-dot.exploring { background: var(--green); animation: pulse 1s infinite; }
+.explore-dot.complete  { background: var(--accent); }
+.explore-dot.idle      { background: var(--dim); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Center tabs ─────────────────────────────────── */
+.center-wrap {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tab-bar {
+  display: flex;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab-btn {
+  padding: 8px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  transition: color 0.1s, border-color 0.1s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-pane { display: none; flex: 1; min-height: 0; }
+.tab-pane.active { display: flex; flex-direction: column; }
+
+/* ── Path map pane ───────────────────────────────── */
+.map-wrap {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -191,6 +231,51 @@ canvas {
 }
 .map-actions button:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ── SLAM map pane ───────────────────────────────── */
+.slam-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  position: relative;
+}
+.slam-bar {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 0 2px;
+}
+#slam-canvas {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: crosshair;
+  image-rendering: pixelated;
+  max-width: 100%;
+  max-height: calc(100% - 60px);
+}
+.slam-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--dim);
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-box { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); }
+.slam-no-data {
+  position: absolute;
+  color: var(--dim);
+  font-size: 13px;
+  text-align: center;
+  line-height: 2;
+  pointer-events: none;
+}
+
 /* ── Telemetry ───────────────────────────────────── */
 .tel-row {
   display: flex;
@@ -199,18 +284,9 @@ canvas {
   border-bottom: 1px solid #1c2128;
 }
 .tel-val { color: var(--green); font-weight: bold; }
-.tel-val.warn { color: var(--yellow); }
-.tel-val.info { color: var(--accent); }
-
-/* velocity bar */
-.vel-bar-wrap {
-  margin-top: 8px;
-  background: var(--bg);
-  border-radius: 4px;
-  overflow: hidden;
-  height: 6px;
-  width: 100%;
-}
+.tel-val.warn  { color: var(--yellow); }
+.tel-val.info  { color: var(--accent); }
+.vel-bar-wrap { margin-top: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; height: 6px; width: 100%; }
 .vel-bar { height: 100%; background: var(--green); transition: width 0.1s; width: 0%; }
 </style>
 </head>
@@ -232,13 +308,13 @@ canvas {
       <div class="sec-title">Direction Control</div>
       <div class="dpad">
         <div></div>
-        <button class="dbtn" id="btn-fwd" title="Forward (W / ↑)">▲</button>
+        <button class="dbtn" id="btn-fwd"   title="Forward (W / ↑)">▲</button>
         <div></div>
-        <button class="dbtn" id="btn-left" title="Turn Left (A / ←)">◄</button>
+        <button class="dbtn" id="btn-left"  title="Turn Left (A / ←)">◄</button>
         <button class="dbtn stop" id="btn-stop" title="Stop (Space)">■</button>
         <button class="dbtn" id="btn-right" title="Turn Right (D / →)">►</button>
         <div></div>
-        <button class="dbtn" id="btn-back" title="Backward (S / ↓)">▼</button>
+        <button class="dbtn" id="btn-back"  title="Backward (S / ↓)">▼</button>
         <div></div>
       </div>
     </div>
@@ -249,6 +325,24 @@ canvas {
       <input type="range" id="lv-slider" min="0.1" max="1.5" step="0.05" value="0.5">
       <div class="slider-row"><span>Angular</span><span id="av-label">1.00 rad/s</span></div>
       <input type="range" id="av-slider" min="0.1" max="2.5" step="0.1" value="1.0">
+    </div>
+
+    <!-- ── 자율탐색 ─────────────────────────── -->
+    <div class="section">
+      <div class="sec-title">자율탐색 (Autonomous Explore)</div>
+
+      <div class="explore-status">
+        <span class="explore-dot idle" id="exp-dot"></span>
+        <span id="exp-status-text">대기 중</span>
+      </div>
+
+      <button class="act-btn success" id="btn-explore-start">▶ 탐색 시작</button>
+      <button class="act-btn danger"  id="btn-explore-stop" style="display:none">■ 탐색 중지</button>
+
+      <div class="hint-box" style="margin-top:8px">
+        ROS2 + Nav2 + SLAM 필요<br>
+        맵탭에서 실시간 지도 확인
+      </div>
     </div>
 
     <div class="section">
@@ -265,17 +359,48 @@ canvas {
     <button class="act-btn danger" id="btn-estop">⬛ EMERGENCY STOP</button>
   </div>
 
-  <!-- ── Center: Map canvas ─────────────────────── -->
-  <div class="map-wrap">
-    <div class="map-bar">
-      <span>PATH MAP &nbsp;·&nbsp; <span id="pt-count">0</span> pts</span>
-      <span>Scroll: zoom &nbsp;·&nbsp; Follow: <span id="follow-label" style="color:var(--accent)">ON</span></span>
+  <!-- ── Center: Tabbed map area ───────────────── -->
+  <div class="center-wrap">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="path-tab">경로 맵</button>
+      <button class="tab-btn"        data-tab="slam-tab">탐색 맵 (SLAM)</button>
     </div>
-    <canvas id="map"></canvas>
-    <div class="map-actions">
-      <button id="btn-clear">Clear Path</button>
-      <button id="btn-reset">Reset Position</button>
-      <button id="btn-follow">Follow: ON</button>
+
+    <!-- Tab 1: Path map (existing) -->
+    <div class="tab-pane active" id="path-tab">
+      <div class="map-wrap">
+        <div class="map-bar">
+          <span>PATH MAP &nbsp;·&nbsp; <span id="pt-count">0</span> pts</span>
+          <span>Scroll: zoom &nbsp;·&nbsp; Follow: <span id="follow-label" style="color:var(--accent)">ON</span></span>
+        </div>
+        <canvas id="map"></canvas>
+        <div class="map-actions">
+          <button id="btn-clear">Clear Path</button>
+          <button id="btn-reset">Reset Position</button>
+          <button id="btn-follow">Follow: ON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: SLAM occupancy grid -->
+    <div class="tab-pane" id="slam-tab">
+      <div class="slam-wrap">
+        <div class="slam-bar">
+          <span>SLAM MAP &nbsp;·&nbsp; <span id="slam-size">-</span></span>
+          <span>Scroll: zoom &nbsp;·&nbsp; <span id="slam-res">-</span></span>
+        </div>
+        <canvas id="slam-canvas"></canvas>
+        <div class="slam-no-data" id="slam-no-data">
+          SLAM 맵 수신 대기 중...<br>
+          <span style="font-size:11px">Nav2 + SLAM Toolbox 실행 후 탐색을 시작하세요</span>
+        </div>
+        <div class="slam-legend">
+          <div class="legend-item"><div class="legend-box" style="background:#888"></div>미탐색</div>
+          <div class="legend-item"><div class="legend-box" style="background:#ddd"></div>자유 공간</div>
+          <div class="legend-item"><div class="legend-box" style="background:#111"></div>장애물</div>
+          <div class="legend-item"><div class="legend-box" style="background:#f85149"></div>로봇</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -299,6 +424,7 @@ canvas {
     <div class="section">
       <div class="sec-title">System</div>
       <div class="tel-row"><span>Mode</span><span class="tel-val warn" id="t-mode">SIM</span></div>
+      <div class="tel-row"><span>Explore</span><span class="tel-val info" id="t-explore">IDLE</span></div>
       <div class="tel-row"><span>Path pts</span><span class="tel-val info" id="t-pts">0</span></div>
       <div class="tel-row"><span>WebSocket</span><span class="tel-val" id="t-ws" style="color:var(--red)">DISC</span></div>
     </div>
@@ -313,193 +439,219 @@ canvas {
 
 <script>
 // ─────────────────────────────────────────────────────────
-// Canvas
+// Tab switching
+// ─────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'path-tab') { resizeCanvas(); draw(); }
+    else { resizeSlamCanvas(); drawSlam(); }
+  });
+});
+
+// ─────────────────────────────────────────────────────────
+// Path canvas
 // ─────────────────────────────────────────────────────────
 const canvas = document.getElementById("map");
-const ctx = canvas.getContext("2d");
-let scale = 80;        // px / metre
-let followRobot = true;
-let viewX = 0, viewY = 0;
-let path = [{ x: 0, y: 0 }];
-let totalDist = 0;
+const ctx    = canvas.getContext("2d");
+let scale = 80, followRobot = true, viewX = 0, viewY = 0;
+let path = [{ x: 0, y: 0 }], totalDist = 0;
 
 function resizeCanvas() {
   const wrap = canvas.parentElement;
   const size = Math.min(wrap.clientWidth - 24, wrap.clientHeight - 80);
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = size; canvas.height = size;
 }
 resizeCanvas();
-window.addEventListener("resize", () => { resizeCanvas(); draw(); });
+window.addEventListener("resize", () => { resizeCanvas(); draw(); resizeSlamCanvas(); drawSlam(); });
 
-// ── Coordinate helpers ─────────────────────────────────
 function w2c(wx, wy) {
-  const cx = canvas.width / 2, cy = canvas.height / 2;
-  return { x: cx + (wx - viewX) * scale, y: cy - (wy - viewY) * scale };
+  return { x: canvas.width/2 + (wx - viewX)*scale, y: canvas.height/2 - (wy - viewY)*scale };
 }
 
-// ── Draw functions ─────────────────────────────────────
 function drawGrid() {
-  const g = scale;
-  const cx = canvas.width / 2, cy = canvas.height / 2;
-  const ox = ((cx - viewX * scale) % g + g) % g;
-  const oy = ((cy + viewY * scale) % g + g) % g;
-
-  ctx.strokeStyle = "rgba(48,54,61,0.9)";
-  ctx.lineWidth = 1;
-  for (let x = ox - g; x < canvas.width + g; x += g) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-  }
-  for (let y = oy - g; y < canvas.height + g; y += g) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-  }
-
-  // origin axes
-  const o = w2c(0, 0);
-  ctx.strokeStyle = "rgba(88,166,255,0.25)";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([5, 4]);
-  ctx.beginPath(); ctx.moveTo(0, o.y); ctx.lineTo(canvas.width, o.y); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(o.x, 0); ctx.lineTo(o.x, canvas.height); ctx.stroke();
+  const g = scale, cx = canvas.width/2, cy = canvas.height/2;
+  const ox = ((cx - viewX*scale) % g + g) % g;
+  const oy = ((cy + viewY*scale) % g + g) % g;
+  ctx.strokeStyle = "rgba(48,54,61,0.9)"; ctx.lineWidth = 1;
+  for (let x = ox-g; x < canvas.width+g; x += g) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+  for (let y = oy-g; y < canvas.height+g; y += g) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+  const o = w2c(0,0);
+  ctx.strokeStyle = "rgba(88,166,255,0.25)"; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(0,o.y); ctx.lineTo(canvas.width,o.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(o.x,0); ctx.lineTo(o.x,canvas.height); ctx.stroke();
   ctx.setLineDash([]);
-
-  // origin dot
   ctx.fillStyle = "rgba(88,166,255,0.5)";
-  ctx.beginPath(); ctx.arc(o.x, o.y, 3, 0, Math.PI * 2); ctx.fill();
-
-  // grid labels (m)
-  ctx.fillStyle = "rgba(139,148,158,0.5)";
-  ctx.font = "9px Courier New";
-  const startXm = Math.ceil(viewX - canvas.width / (2 * scale));
-  for (let m = startXm; m <= startXm + canvas.width / scale + 1; m++) {
-    if (m === 0) continue;
-    const p = w2c(m, 0);
-    if (p.x > 4 && p.x < canvas.width - 4) ctx.fillText(m + "m", p.x + 2, cy + 11);
-  }
+  ctx.beginPath(); ctx.arc(o.x,o.y,3,0,Math.PI*2); ctx.fill();
 }
 
 function drawPath() {
   if (path.length < 2) return;
-  ctx.strokeStyle = "#3fb950";
-  ctx.lineWidth = 2;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
+  ctx.strokeStyle = "#3fb950"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round";
   ctx.beginPath();
-  const s = w2c(path[0].x, path[0].y);
-  ctx.moveTo(s.x, s.y);
-  for (let i = 1; i < path.length; i++) {
-    const p = w2c(path[i].x, path[i].y);
-    ctx.lineTo(p.x, p.y);
-  }
+  const s = w2c(path[0].x, path[0].y); ctx.moveTo(s.x, s.y);
+  for (let i = 1; i < path.length; i++) { const p = w2c(path[i].x,path[i].y); ctx.lineTo(p.x,p.y); }
   ctx.stroke();
-
-  // start marker
   ctx.fillStyle = "#58a6ff";
-  ctx.beginPath();
-  const sp = w2c(path[0].x, path[0].y);
-  ctx.arc(sp.x, sp.y, 5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#0d1117";
-  ctx.font = "bold 9px Courier New";
-  ctx.fillText("S", sp.x - 3, sp.y + 3);
+  const sp = w2c(path[0].x,path[0].y);
+  ctx.beginPath(); ctx.arc(sp.x,sp.y,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#0d1117"; ctx.font = "bold 9px Courier New";
+  ctx.fillText("S", sp.x-3, sp.y+3);
 }
 
 function drawRobot(rx, ry, theta) {
   const p = w2c(rx, ry);
-  ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.rotate(-theta);
-
-  // shadow
-  ctx.shadowColor = "#58a6ff";
-  ctx.shadowBlur = 8;
-
-  // body triangle
-  ctx.fillStyle = "#e6edf3";
-  ctx.strokeStyle = "#58a6ff";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(16, 0);
-  ctx.lineTo(-8, -9);
-  ctx.lineTo(-5, 0);
-  ctx.lineTo(-8, 9);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
+  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(-theta);
+  ctx.shadowColor = "#58a6ff"; ctx.shadowBlur = 8;
+  ctx.fillStyle = "#e6edf3"; ctx.strokeStyle = "#58a6ff"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(16,0); ctx.lineTo(-8,-9); ctx.lineTo(-5,0); ctx.lineTo(-8,9); ctx.closePath();
+  ctx.fill(); ctx.stroke();
   ctx.shadowBlur = 0;
-
-  // heading line
-  ctx.strokeStyle = "#f85149";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(20, 0);
-  ctx.stroke();
-
+  ctx.strokeStyle = "#f85149"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(20,0); ctx.stroke();
   ctx.restore();
 }
 
-function drawCompass(rx, ry, theta) {
-  const cx = canvas.width - 36, cy = 36, r = 24;
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  ctx.fillStyle = "rgba(22,27,34,0.85)";
-  ctx.strokeStyle = var_border();
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-  // N marker
-  ctx.fillStyle = "#f85149";
-  ctx.font = "bold 9px Courier New";
-  ctx.textAlign = "center";
-  ctx.fillText("N", 0, -r + 12);
-
-  // needle (robot heading)
+function drawCompass(theta) {
+  const cx = canvas.width-36, cy = 36, r = 24;
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle = "rgba(22,27,34,0.85)"; ctx.strokeStyle = "#30363d"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#f85149"; ctx.font = "bold 9px Courier New"; ctx.textAlign = "center";
+  ctx.fillText("N",0,-r+12);
   ctx.rotate(-theta);
-  ctx.strokeStyle = "#58a6ff";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -r + 6); ctx.stroke();
+  ctx.strokeStyle = "#58a6ff"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-r+6); ctx.stroke();
   ctx.fillStyle = "#58a6ff";
-  ctx.beginPath(); ctx.moveTo(0, -r + 6); ctx.lineTo(-3, -r + 14); ctx.lineTo(3, -r + 14); ctx.fill();
-
+  ctx.beginPath(); ctx.moveTo(0,-r+6); ctx.lineTo(-3,-r+14); ctx.lineTo(3,-r+14); ctx.fill();
   ctx.restore();
 }
-
-function var_border() { return "#30363d"; }
 
 function drawScale() {
-  const bpx = scale;
-  const x = 14, y = canvas.height - 12;
-  ctx.strokeStyle = "#8b949e";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(x, y); ctx.lineTo(x + bpx, y);
-  ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
-  ctx.moveTo(x + bpx, y - 4); ctx.lineTo(x + bpx, y + 4);
-  ctx.stroke();
-  ctx.fillStyle = "#8b949e";
-  ctx.font = "10px Courier New";
-  ctx.textAlign = "center";
-  ctx.fillText("1 m", x + bpx / 2, y - 7);
+  const bpx = scale, x = 14, y = canvas.height-12;
+  ctx.strokeStyle = "#8b949e"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+bpx,y);
+  ctx.moveTo(x,y-4); ctx.lineTo(x,y+4); ctx.moveTo(x+bpx,y-4); ctx.lineTo(x+bpx,y+4); ctx.stroke();
+  ctx.fillStyle = "#8b949e"; ctx.font = "10px Courier New"; ctx.textAlign = "center";
+  ctx.fillText("1 m", x+bpx/2, y-7);
 }
 
-let robot = { x: 0, y: 0, theta: 0, linear: 0, angular: 0, ros2: false };
+let robot = { x:0, y:0, theta:0, linear:0, angular:0, ros2:false, explore:"idle" };
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#0d1117";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,canvas.width,canvas.height);
   if (followRobot) { viewX = robot.x; viewY = robot.y; }
-
-  drawGrid();
-  drawPath();
-  drawRobot(robot.x, robot.y, robot.theta);
-  drawCompass(robot.x, robot.y, robot.theta);
-  drawScale();
+  drawGrid(); drawPath(); drawRobot(robot.x,robot.y,robot.theta);
+  drawCompass(robot.theta); drawScale();
 }
+
+// ─────────────────────────────────────────────────────────
+// SLAM canvas
+// ─────────────────────────────────────────────────────────
+const slamCanvas  = document.getElementById("slam-canvas");
+const slamCtx     = slamCanvas.getContext("2d");
+let slamMap       = null;   // latest map data object
+let slamScale     = 2;      // pixels per cell
+let slamOffX      = 0, slamOffY = 0;
+let slamDragging  = false, slamDragStart = null;
+
+function resizeSlamCanvas() {
+  const wrap = slamCanvas.parentElement;
+  const size = Math.min(wrap.clientWidth - 24, wrap.clientHeight - 80);
+  slamCanvas.width  = size;
+  slamCanvas.height = size;
+}
+resizeSlamCanvas();
+
+function drawSlam() {
+  slamCtx.clearRect(0,0,slamCanvas.width,slamCanvas.height);
+  slamCtx.fillStyle = "#1a1e24";
+  slamCtx.fillRect(0,0,slamCanvas.width,slamCanvas.height);
+
+  if (!slamMap) {
+    document.getElementById("slam-no-data").style.display = "block";
+    return;
+  }
+  document.getElementById("slam-no-data").style.display = "none";
+
+  const { width, height, data: b64 } = slamMap;
+  const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+
+  // Draw cells
+  const cellPx = slamScale;
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      const v = raw[row * width + col];
+      let color;
+      if      (v === 205) color = "#555";       // unknown (-1)
+      else if (v === 0)   color = "#d0d7de";    // free
+      else                color = "#0d1117";    // occupied
+
+      slamCtx.fillStyle = color;
+      slamCtx.fillRect(
+        slamOffX + col * cellPx,
+        slamOffY + (height - 1 - row) * cellPx,  // flip Y (ROS Y-up)
+        cellPx, cellPx
+      );
+    }
+  }
+
+  // Draw robot
+  const info = slamMap;
+  const rx = slamOffX + ((robot.x - info.origin_x) / info.resolution) * cellPx;
+  const ry = slamOffY + (height - 1 - ((robot.y - info.origin_y) / info.resolution)) * cellPx;
+
+  slamCtx.save();
+  slamCtx.translate(rx, ry);
+  slamCtx.rotate(-robot.theta);
+
+  slamCtx.shadowColor = "#f85149"; slamCtx.shadowBlur = 6;
+  slamCtx.fillStyle   = "#f85149";
+  slamCtx.beginPath();
+  const rs = Math.max(6, cellPx * 3);
+  slamCtx.moveTo(rs, 0); slamCtx.lineTo(-rs*0.6, -rs*0.5); slamCtx.lineTo(-rs*0.6, rs*0.5);
+  slamCtx.closePath(); slamCtx.fill();
+  slamCtx.shadowBlur = 0;
+  slamCtx.restore();
+}
+
+// Fit map to canvas when first received
+function slamFitToCanvas() {
+  if (!slamMap) return;
+  const { width, height } = slamMap;
+  const fitScale = Math.min(slamCanvas.width / width, slamCanvas.height / height);
+  slamScale = Math.max(1, Math.floor(fitScale));
+  slamOffX  = Math.floor((slamCanvas.width  - width  * slamScale) / 2);
+  slamOffY  = Math.floor((slamCanvas.height - height * slamScale) / 2);
+}
+
+// Zoom on slam canvas
+slamCanvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.2 : 0.83;
+  const newScale = Math.max(1, Math.min(20, slamScale * factor));
+  // Zoom around cursor
+  const rect = slamCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  slamOffX = mx - (mx - slamOffX) * (newScale / slamScale);
+  slamOffY = my - (my - slamOffY) * (newScale / slamScale);
+  slamScale = newScale;
+  drawSlam();
+}, { passive: false });
+
+// Pan slam canvas
+slamCanvas.addEventListener("mousedown", e => { slamDragging = true; slamDragStart = { x: e.clientX - slamOffX, y: e.clientY - slamOffY }; });
+window.addEventListener("mousemove",    e => {
+  if (!slamDragging) return;
+  slamOffX = e.clientX - slamDragStart.x;
+  slamOffY = e.clientY - slamDragStart.y;
+  drawSlam();
+});
+window.addEventListener("mouseup", () => { slamDragging = false; });
 
 // ─────────────────────────────────────────────────────────
 // WebSocket
@@ -512,10 +664,9 @@ function connect() {
   ws.onopen = () => {
     document.getElementById("dot").classList.add("ok");
     document.getElementById("conn-text").textContent = "CONNECTED";
-    document.getElementById("t-ws").textContent = "OK";
-    document.getElementById("t-ws").style.color = "var(--green)";
+    document.getElementById("t-ws").textContent  = "OK";
+    document.getElementById("t-ws").style.color  = "var(--green)";
   };
-
   ws.onclose = () => {
     document.getElementById("dot").classList.remove("ok");
     document.getElementById("conn-text").textContent = "DISCONNECTED";
@@ -527,46 +678,101 @@ function connect() {
   ws.onmessage = (e) => {
     const d = JSON.parse(e.data);
 
-    // accumulate path on frontend
-    const last = path[path.length - 1];
-    const dx = d.x - last.x, dy = d.y - last.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist >= 0.02) {
-      path.push({ x: d.x, y: d.y });
-      totalDist += dist;
-      if (path.length > 5000) path.shift();
-    }
+    if (d.type === "state") {
+      // Path tracking
+      const last = path[path.length - 1];
+      const dist = Math.hypot(d.x - last.x, d.y - last.y);
+      if (dist >= 0.02) {
+        path.push({ x: d.x, y: d.y });
+        totalDist += dist;
+        if (path.length > 5000) path.shift();
+      }
+      robot = d;
+      updateTelemetry(d);
+      draw();
+      drawSlam();   // redraw robot on slam map too
 
-    robot = d;
-    updateTelemetry(d);
-    draw();
+    } else if (d.type === "map") {
+      const isFirst = !slamMap;
+      slamMap = d;
+      document.getElementById("slam-size").textContent =
+        `${d.width}×${d.height} cells`;
+      document.getElementById("slam-res").textContent  =
+        `${(d.resolution * 100).toFixed(1)} cm/cell`;
+      if (isFirst) slamFitToCanvas();
+      drawSlam();
+    }
   };
 }
 
 function updateTelemetry(d) {
-  document.getElementById("t-x").textContent    = d.x.toFixed(3) + " m";
-  document.getElementById("t-y").textContent    = d.y.toFixed(3) + " m";
-  document.getElementById("t-th").textContent   = (d.theta * 180 / Math.PI).toFixed(1) + " °";
-  document.getElementById("t-lin").textContent  = d.linear.toFixed(2) + " m/s";
-  document.getElementById("t-ang").textContent  = d.angular.toFixed(2) + " rad/s";
-  document.getElementById("t-pts").textContent  = path.length;
+  document.getElementById("t-x").textContent   = d.x.toFixed(3) + " m";
+  document.getElementById("t-y").textContent   = d.y.toFixed(3) + " m";
+  document.getElementById("t-th").textContent  = (d.theta * 180 / Math.PI).toFixed(1) + " °";
+  document.getElementById("t-lin").textContent = d.linear.toFixed(2) + " m/s";
+  document.getElementById("t-ang").textContent = d.angular.toFixed(2) + " rad/s";
+  document.getElementById("t-pts").textContent = path.length;
   document.getElementById("pt-count").textContent = path.length;
   document.getElementById("t-dist").textContent = totalDist.toFixed(2) + " m";
 
   const maxL = parseFloat(document.getElementById("lv-slider").value);
   const maxA = parseFloat(document.getElementById("av-slider").value);
-  document.getElementById("lin-bar").style.width = Math.min(100, Math.abs(d.linear) / maxL * 100) + "%";
-  document.getElementById("ang-bar").style.width = Math.min(100, Math.abs(d.angular) / maxA * 100) + "%";
+  document.getElementById("lin-bar").style.width = Math.min(100, Math.abs(d.linear)/maxL*100) + "%";
+  document.getElementById("ang-bar").style.width = Math.min(100, Math.abs(d.angular)/maxA*100) + "%";
   document.getElementById("lin-bar").style.background = d.linear < 0 ? "var(--yellow)" : "var(--green)";
   document.getElementById("ang-bar").style.background = "var(--accent)";
 
   const modeEl = document.getElementById("t-mode");
-  if (d.ros2) {
-    modeEl.textContent = "ROS2"; modeEl.style.color = "var(--green)";
+  modeEl.textContent = d.ros2 ? "ROS2" : "SIM";
+  modeEl.style.color = d.ros2 ? "var(--green)" : "var(--yellow)";
+
+  // Explore status
+  setExploreStatus(d.explore || "idle");
+}
+
+// ─────────────────────────────────────────────────────────
+// Exploration UI
+// ─────────────────────────────────────────────────────────
+const STATUS_LABEL = { idle: "대기 중", exploring: "탐색 중...", complete: "탐색 완료" };
+
+function setExploreStatus(status) {
+  const dot     = document.getElementById("exp-dot");
+  const txt     = document.getElementById("exp-status-text");
+  const telEl   = document.getElementById("t-explore");
+  const btnStart= document.getElementById("btn-explore-start");
+  const btnStop = document.getElementById("btn-explore-stop");
+
+  dot.className = `explore-dot ${status}`;
+  txt.textContent = STATUS_LABEL[status] || status;
+  telEl.textContent = status.toUpperCase();
+
+  if (status === "exploring") {
+    btnStart.style.display = "none";
+    btnStop.style.display  = "block";
+    btnStart.classList.remove("active-explore");
   } else {
-    modeEl.textContent = "SIM";  modeEl.style.color = "var(--yellow)";
+    btnStart.style.display = "block";
+    btnStop.style.display  = "none";
   }
 }
+
+document.getElementById("btn-explore-start").addEventListener("click", () => {
+  fetch("/explore/start", { method: "POST" })
+    .then(r => r.json())
+    .then(d => setExploreStatus(d.status));
+  // Auto-switch to slam tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="slam-tab"]').classList.add('active');
+  document.getElementById('slam-tab').classList.add('active');
+  resizeSlamCanvas(); drawSlam();
+});
+
+document.getElementById("btn-explore-stop").addEventListener("click", () => {
+  fetch("/explore/stop", { method: "POST" })
+    .then(r => r.json())
+    .then(d => setExploreStatus(d.status));
+});
 
 // ─────────────────────────────────────────────────────────
 // Velocity commands
@@ -581,63 +787,51 @@ function sendVel(lin, ang) {
   });
 }
 
-// D-pad hold logic
 const BTN_CFG = {
   "btn-fwd":   () => [maxLin, 0],
   "btn-back":  () => [-maxLin, 0],
   "btn-left":  () => [0, maxAng],
   "btn-right": () => [0, -maxAng],
 };
-
 const holding = {};
 
 function startHold(id) {
   if (holding[id]) return;
-  const [l, a] = BTN_CFG[id]();
-  sendVel(l, a);
+  const [l,a] = BTN_CFG[id](); sendVel(l,a);
   document.getElementById(id).classList.add("active");
-  holding[id] = setInterval(() => {
-    const [ll, aa] = BTN_CFG[id]();
-    sendVel(ll, aa);
-  }, 80);
+  holding[id] = setInterval(() => { const [ll,aa] = BTN_CFG[id](); sendVel(ll,aa); }, 80);
 }
-
 function endHold(id) {
   if (holding[id]) { clearInterval(holding[id]); delete holding[id]; }
   document.getElementById(id).classList.remove("active");
   if (Object.keys(holding).length === 0) sendVel(0, 0);
 }
-
 function fullStop() {
-  Object.keys(holding).forEach(id => {
-    clearInterval(holding[id]); delete holding[id];
-    document.getElementById(id).classList.remove("active");
-  });
-  keysDown.clear();
-  sendVel(0, 0);
+  Object.keys(holding).forEach(id => { clearInterval(holding[id]); delete holding[id]; document.getElementById(id).classList.remove("active"); });
+  keysDown.clear(); sendVel(0, 0);
 }
 
 Object.keys(BTN_CFG).forEach(id => {
   const el = document.getElementById(id);
-  el.addEventListener("mousedown",  () => startHold(id));
-  el.addEventListener("mouseup",    () => endHold(id));
-  el.addEventListener("mouseleave", () => endHold(id));
-  el.addEventListener("touchstart", e => { e.preventDefault(); startHold(id); }, { passive: false });
-  el.addEventListener("touchend",   () => endHold(id));
-  el.addEventListener("touchcancel",() => endHold(id));
+  el.addEventListener("mousedown",   () => startHold(id));
+  el.addEventListener("mouseup",     () => endHold(id));
+  el.addEventListener("mouseleave",  () => endHold(id));
+  el.addEventListener("touchstart",  e => { e.preventDefault(); startHold(id); }, { passive: false });
+  el.addEventListener("touchend",    () => endHold(id));
+  el.addEventListener("touchcancel", () => endHold(id));
 });
 
-document.getElementById("btn-stop").addEventListener("click", fullStop);
+document.getElementById("btn-stop").addEventListener("click",  fullStop);
 document.getElementById("btn-estop").addEventListener("click", fullStop);
 
 // ─────────────────────────────────────────────────────────
 // Keyboard
 // ─────────────────────────────────────────────────────────
 const KEY_MAP = {
-  KeyW: "btn-fwd",   ArrowUp:    "btn-fwd",
-  KeyS: "btn-back",  ArrowDown:  "btn-back",
-  KeyA: "btn-left",  ArrowLeft:  "btn-left",
-  KeyD: "btn-right", ArrowRight: "btn-right",
+  KeyW: "btn-fwd",  ArrowUp:    "btn-fwd",
+  KeyS: "btn-back", ArrowDown:  "btn-back",
+  KeyA: "btn-left", ArrowLeft:  "btn-left",
+  KeyD: "btn-right",ArrowRight: "btn-right",
 };
 const keysDown = new Set();
 
@@ -665,36 +859,28 @@ document.getElementById("av-slider").addEventListener("input", e => {
 });
 
 // ─────────────────────────────────────────────────────────
-// Map controls
+// Path map controls
 // ─────────────────────────────────────────────────────────
 document.getElementById("btn-clear").addEventListener("click", () => {
-  path = [{ x: robot.x, y: robot.y }];
-  totalDist = 0;
-  draw();
+  path = [{ x: robot.x, y: robot.y }]; totalDist = 0; draw();
 });
 document.getElementById("btn-reset").addEventListener("click", () => {
   fetch("/reset", { method: "POST" });
-  path = [{ x: 0, y: 0 }];
-  totalDist = 0;
-  robot = { x: 0, y: 0, theta: 0, linear: 0, angular: 0, ros2: robot.ros2 };
+  path = [{ x: 0, y: 0 }]; totalDist = 0;
+  robot = { x:0, y:0, theta:0, linear:0, angular:0, ros2:robot.ros2, explore:robot.explore };
   draw();
 });
-
 let followLocked = true;
 document.getElementById("btn-follow").addEventListener("click", () => {
-  followLocked = !followLocked;
-  followRobot = followLocked;
+  followLocked = !followLocked; followRobot = followLocked;
   const lbl = followLocked ? "ON" : "OFF";
   document.getElementById("btn-follow").textContent = "Follow: " + lbl;
   document.getElementById("follow-label").textContent = lbl;
   document.getElementById("follow-label").style.color = followLocked ? "var(--accent)" : "var(--dim)";
 });
-
-// Mouse wheel zoom
 canvas.addEventListener("wheel", e => {
   e.preventDefault();
-  const factor = e.deltaY < 0 ? 1.15 : 0.87;
-  scale = Math.min(400, Math.max(20, scale * factor));
+  scale = Math.min(400, Math.max(20, scale * (e.deltaY < 0 ? 1.15 : 0.87)));
   draw();
 }, { passive: false });
 
